@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"log"
 	"net/http"
 
+	"github.com/labstack/echo/v4"
+	_ "github.com/labstack/echo/v4"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -30,16 +30,14 @@ func generateCourses() {
 
 func main() {
 	generateCourses()
-	http.HandleFunc("/courses", listCourses)
-	http.ListenAndServe(":8081", nil)
+	e := echo.New()
+	e.GET("/courses", listCourses)
+	e.Logger.Fatal(e.Start(":8081"))
+
 }
 
-func listCourses(w http.ResponseWriter, r *http.Request) {
-	jsonCourses, err := json.Marshal(courses)
-	if err != nil {
-		log.Fatal(err)
-	}
-	w.Write([]byte(jsonCourses))
+func listCourses(c echo.Context) error {
+	return c.JSON(http.StatusOK, courses)
 }
 
 func persistCourse() error {
