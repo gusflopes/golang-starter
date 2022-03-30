@@ -2,22 +2,44 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
+	"log"
 	"net/http"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
-	x := "Gustavo Lopes"
-	print(x)
+var courses []Course
 
+type Course struct {
+	ID   int    `json:"id"`
+	Name string `json:"course_name"`
+}
+
+func generateCourses() {
+	course1 := Course{
+		ID:   1,
+		Name: "Full Cycle",
+	}
+	course2 := Course{
+		ID:   2,
+		Name: "Bonus Full Cycle",
+	}
+	courses = append(courses, course1, course2)
+}
+
+func main() {
+	generateCourses()
 	http.HandleFunc("/courses", listCourses)
 	http.ListenAndServe(":8081", nil)
 }
 
 func listCourses(w http.ResponseWriter, r *http.Request) {
-	persistCourse()
-	w.Write([]byte("Hello World"))
+	jsonCourses, err := json.Marshal(courses)
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Write([]byte(jsonCourses))
 }
 
 func persistCourse() error {
